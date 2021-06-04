@@ -2,6 +2,8 @@ const express = require('express')
 const dotenv = require('dotenv')
 const morgan = require('morgan')
 const connectDB = require('./config/db')
+
+const colors = require('colors')
 // Load env vars
 dotenv.config({ path: './config/config.env' })
 
@@ -27,12 +29,14 @@ const startServer = () => {
       app.listen(
         PORT,
         console.log(
-          `Server running in ${process.env.NODE_ENV} mode on port ${PORT}`
+          `Server running in ${process.env.NODE_ENV} mode on port ${PORT}`.cyan
+            .bold
         )
       )
     })
     .catch(err => {
-      console.log(`Cannot connect to database : ${err}`)
+      console.log(`Cannot connect to database : ${err}`.red.bold)
+      process.exit(1)
     })
 }
 
