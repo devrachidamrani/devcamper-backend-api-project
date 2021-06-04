@@ -1,6 +1,7 @@
 const express = require('express')
 const dotenv = require('dotenv')
 const morgan = require('morgan')
+const connectDB = require('./config/db')
 // Load env vars
 dotenv.config({ path: './config/config.env' })
 
@@ -18,7 +19,21 @@ app.use('/api/v1/bootcamps', bootcampsRouter)
 
 const PORT = process.env.PORT || 3000
 
-app.listen(
-  PORT,
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
-)
+// Connect to database then run server
+
+const startServer = () => {
+  connectDB()
+    .then(() => {
+      app.listen(
+        PORT,
+        console.log(
+          `Server running in ${process.env.NODE_ENV} mode on port ${PORT}`
+        )
+      )
+    })
+    .catch(err => {
+      console.log(`Cannot connect to database : ${err}`)
+    })
+}
+
+startServer()
