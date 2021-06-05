@@ -3,7 +3,7 @@ const dotenv = require('dotenv')
 const morgan = require('morgan')
 const connectDB = require('./config/db')
 const colors = require('colors')
-
+const errorHandler = require('./middlewares/error')
 // Load env vars
 dotenv.config({ path: './config/config.env' })
 
@@ -21,11 +21,11 @@ app.use(express.json())
 
 // Mount routers
 app.use('/api/v1/bootcamps', bootcampsRouter)
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3000
 
 // Connect to database then run server
-
 const startServer = () => {
   connectDB()
     .then(() => {
