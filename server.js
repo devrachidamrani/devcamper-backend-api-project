@@ -10,6 +10,7 @@ dotenv.config({ path: './config/config.env' })
 const app = express()
 
 const bootcampsRouter = require('./routes/bootcamps.router')
+const coursesRouter = require('./routes/courses.router')
 
 // Dev logging middleware
 if (process.env.NODE_ENV === 'development') {
@@ -21,6 +22,8 @@ app.use(express.json())
 
 // Mount routers
 app.use('/api/v1/bootcamps', bootcampsRouter)
+app.use('/api/v1/courses', coursesRouter)
+
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 3000
