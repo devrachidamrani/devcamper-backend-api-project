@@ -13,6 +13,7 @@ const app = express()
 
 const bootcampsRouter = require('./routes/bootcamps.router')
 const coursesRouter = require('./routes/courses.router')
+const { register } = require('./controllers/auth.controller')
 
 // Dev logging middleware
 if (process.env.NODE_ENV === 'development') {
@@ -31,6 +32,7 @@ app.use(fileupload())
 // Mount routers
 app.use('/api/v1/bootcamps', bootcampsRouter)
 app.use('/api/v1/courses', coursesRouter)
+app.use('/api/v1/auth', register)
 
 app.use(errorHandler)
 
@@ -48,7 +50,7 @@ const startServer = () => {
         )
       )
     })
-    .catch(err => {
+    .catch((err) => {
       console.log(`Cannot connect to database : ${err}`.red.bold)
       process.exit(1)
     })
