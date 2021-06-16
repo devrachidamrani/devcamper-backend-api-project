@@ -6,6 +6,8 @@ const connectDB = require("./config/db")
 const colors = require("colors")
 const errorHandler = require("./middlewares/error")
 const fileupload = require("express-fileupload")
+const cookieParser = require("cookie-parser")
+
 // Load env vars
 dotenv.config({ path: "./config/config.env" })
 
@@ -22,6 +24,9 @@ if (process.env.NODE_ENV === "development") {
 
 // Body parser
 app.use(express.json())
+
+// Cookie parser
+app.use(cookieParser())
 
 // Set static folder
 app.use(express.static(path.join(__dirname, "public")))
