@@ -1,6 +1,6 @@
-const ErrorResponse = require("../utils/errorResponse")
-const asyncHandler = require("../middlewares/async")
-const User = require("../models/User")
+const ErrorResponse = require('../utils/errorResponse')
+const asyncHandler = require('../middlewares/async')
+const User = require('../models/User')
 
 // @desc Register user
 // @route POST /api/v1/auth/register
@@ -22,46 +22,25 @@ exports.login = asyncHandler(async (req, res, next) => {
 
   // Validate email and password
   if (!email || !password) {
-    return next(new ErrorResponse("Please provide an email and password", 400))
+    return next(new ErrorResponse('Please provide an email and password', 400))
   }
 
   // Check for user
-  const user = await User.findOne({ email }).select("+password")
+  const user = await User.findOne({ email }).select('+password')
 
   if (!user) {
-    return next(new ErrorResponse("Invalid crendentials", "401"))
+    return next(new ErrorResponse('Invalid crendentials', '401'))
   }
 
   // Check if password matches
   const isMatched = await user.matchPassword(password)
 
   if (!isMatched) {
-    return next(new ErrorResponse("Invalid crendentials", "401"))
+    return next(new ErrorResponse('Invalid crendentials', '401'))
   }
 
   sendTokenResponse(user, 200, res)
 })
-
-// Get token from model, create cookie and send respone
-const sendTokenResponse = (user, statusCode, res) => {
-  const token = user.getSignedJwtToken()
-
-  const options = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true,
-  }
-
-  if (process.env.NODE_ENV === "production") {
-    options.secure = true
-  }
-
-  res.status(statusCode).cookie("token", token, options).json({
-    success: true,
-    token,
-  })
-}
 
 // @desc Get current logged in user
 // @route POST /api/v1/auth/me
@@ -73,3 +52,47 @@ exports.getMe = asyncHandler(async (req, res, next) => {
     user: user,
   })
 })
+
+// @desc Forget password
+// @route POST /api/v1/auth/forgotpassword
+// @access Public
+exports.forgotPassword = asyncHandler(async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email })
+
+  if (!user) {
+    return next(new ErrorResponse(`There is no user with that email`, 404))
+  }
+
+  // Get reset token
+  const resetToken = user.getResetPasswordToken()
+
+  await user.save({
+    validateBeforeSave: false,
+  })
+
+  res.status(200).json({
+    success: true,
+    user: user,
+  })
+})
+
+// Get token from model, create cookie and send respone
+function sendTokenResponse(user, statusCode, res) {
+  const token = user.getSignedJwtToken()
+
+  const options = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true,
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    options.secure = true
+  }
+
+  res.status(statusCode).cookie('token', token, options).json({
+    success: true,
+    token,
+  })
+}
