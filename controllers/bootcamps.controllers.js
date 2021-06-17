@@ -1,8 +1,8 @@
-const Bootcamp = require('../models/Bootcamp')
-const ErrorResponse = require('../utils/errorResponse')
-const asyncHandler = require('../middlewares/async')
-const geocoder = require('../utils/geocoder')
-const path = require('path')
+const Bootcamp = require("../models/Bootcamp")
+const ErrorResponse = require("../utils/errorResponse")
+const asyncHandler = require("../middlewares/async")
+const geocoder = require("../utils/geocoder")
+const path = require("path")
 
 // @desc GET All Bootcamps
 // @route GET /api/v1/bootcamps
@@ -33,7 +33,21 @@ exports.getBootcamp = asyncHandler(async (req, res, next) => {
 // @route POST /api/v1/bootcamps
 // @access Private
 exports.createBootcamp = asyncHandler(async (req, res, next) => {
+  // Add user to req.body
+  req.body.user = req.user // The logged in user
+  // Check for published bootcamp
+  const publishedBootcamp = await Bootcamp.findOne({ user: req.user.id })
+  // If the user is not an admin, they can only add one bootcamp
+  if (publishedBootcamp && req.user.role !== "admin") {
+    return next(
+      new ErrorResponse(
+        `The user with ID ${req.user.id} has already published a bootcamp`,
+        400
+      )
+    )
+  }
   const bootcamp = await Bootcamp.create(req.body)
+
   res.status(201).json({
     success: true,
     data: bootcamp,
@@ -132,7 +146,7 @@ exports.bootcampPhotoUpload = asyncHandler(async (req, res, next) => {
   const file = req.files.file
 
   // Make sure the image is a photo
-  if (!file.mimetype.startsWith('image')) {
+  if (!file.mimetype.startsWith("image")) {
     return next(new ErrorResponse(`Please upload an image file`, 400))
   }
 
@@ -149,7 +163,7 @@ exports.bootcampPhotoUpload = asyncHandler(async (req, res, next) => {
 
   // Create custom filename
   file.name = `photo_${bootcamp._id}${path.parse(file.name).ext}`
-  file.mv(`${process.env.FILE_UPLOAD_PATH}/${file.name}`, async (err) => {
+  file.mv(`${process.env.FILE_UPLOAD_PATH}/${file.name}`, async err => {
     if (err) {
       console.error(err)
       return next(new ErrorResponse(`Problem with file upload`, 500))
